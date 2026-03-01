@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chia Zhe Min — Software Engineer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===========================================
+           DARK BOTANICAL — THEME VARIABLES
+           Change these to retheme the entire deck.
+           =========================================== */
+        :root {
+            /* Palette */
+            --bg:          #0c0f0e;
+            --bg2:         #131714;
+            --gold:        #c9a96e;
+            --gold-dim:    rgba(201, 169, 110, 0.10);
+            --gold-border: rgba(201, 169, 110, 0.20);
+            --gold-glow:   rgba(201, 169, 110, 0.30);
+            --sage:        #8aa68d;
+            --sage-dim:    rgba(138, 166, 141, 0.12);
+            --text:        #e8e3d8;
+            --text-dim:    rgba(232, 227, 216, 0.60);
+            --muted:       #6b6b5a;
+
+            /* Fonts */
+            --serif:  'Cormorant Garamond', serif;
+            --sans:   'Outfit', sans-serif;
+            --mono:   'DM Mono', monospace;
+
+            /* Typography — ALL use clamp() for responsive scaling */
+            --title-xl:  clamp(3rem,   9vw,  8.5rem);
+            --title-lg:  clamp(1.75rem, 4.5vw, 4rem);
+            --title-md:  clamp(1.25rem, 3vw,  2.5rem);
+            --body:      clamp(0.8rem,  1.4vw, 1.05rem);
+            --small:     clamp(0.65rem, 1vw,  0.85rem);
+            --label:     clamp(0.55rem, 0.85vw, 0.72rem);
+
+            /* Spacing — ALL use clamp() */
+            --pad:    clamp(2rem, 6vw,  6rem);
+            --gap-xl: clamp(1.5rem, 3vh, 2.5rem);
+            --gap-lg: clamp(1rem,   2vh, 1.75rem);
+            --gap-md: clamp(0.6rem, 1.5vh, 1.25rem);
+            --gap-sm: clamp(0.3rem, 0.8vh, 0.75rem);
+
+            /* Motion */
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --dur:  0.7s;
+        }
+
+        /* ===========================================
+           BASE RESET
+           =========================================== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ===========================================
+           VIEWPORT FITTING — MANDATORY
+           Every slide = exactly one viewport height. No scrolling ever.
+           =========================================== */
+        html {
+            height: 100%;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        body {
+            height: 100%;
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Subtle film-grain texture overlay for depth */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        /* The slide container — CRITICAL constraints */
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;  /* Dynamic viewport for mobile browsers */
+            overflow: hidden; /* CRITICAL: prevent any content overflow */
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            padding: var(--pad);
+        }
+
+        /* ===========================================
+           SHARED BACKGROUND ELEMENTS
+           =========================================== */
+
+        /* Ambient orb — reused with inline position overrides */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .orb-gold { background: radial-gradient(ellipse at center, rgba(201,169,110,0.10) 0%, transparent 70%); }
+        .orb-sage { background: radial-gradient(ellipse at center, rgba(138,166,141,0.10) 0%, transparent 70%); }
+
+        /* Subtle grid pattern */
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(201,169,110,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201,169,110,0.02) 1px, transparent 1px);
+            background-size: 80px 80px;
+            pointer-events: none;
+        }
+
+        /* Thin gold horizontal rule */
+        .rule {
+            width: clamp(40px, 5vw, 70px);
+            height: 1px;
+            background: var(--gold);
+            opacity: 0.65;
+            flex-shrink: 0;
+        }
+
+        /* Orb drift animation */
+        @keyframes drift {
+            0%,100% { transform: translate(0, 0);      }
+            33%      { transform: translate(16px,-12px); }
+            66%      { transform: translate(-9px, 9px); }
+        }
+
+        /* ===========================================
+           NAVIGATION CHROME
+           =========================================== */
+
+        /* Gold progress bar at top */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 2px;
+            width: 0%;
+            background: var(--gold);
+            box-shadow: 0 0 8px var(--gold-glow);
+            transition: width 0.4s var(--ease);
+            z-index: 900;
+        }
+
+        /* Dots on the right */
+        .nav-dots {
+            position: fixed;
+            right: clamp(1rem, 2.5vw, 2rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 900;
+        }
+
+        .nav-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--muted);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s var(--ease);
+            position: relative;
+        }
+
+        /* Tooltip on hover */
+        .nav-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 18px; top: 50%;
+            transform: translateY(-50%);
+            background: rgba(12,15,14,0.95);
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            padding: 3px 8px;
+            border-radius: 3px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            border: 1px solid var(--gold-border);
+        }
+        .nav-dot:hover::after { opacity: 1; }
+        .nav-dot.active { background: var(--gold); box-shadow: 0 0 8px var(--gold-glow); transform: scale(1.6); }
+        .nav-dot:hover:not(.active) { background: var(--text-dim); }
+
+        /* Slide counter — bottom left */
+        .slide-counter {
+            position: fixed;
+            bottom: clamp(1rem, 3vh, 2rem);
+            left: var(--pad);
+            font-family: var(--mono);
+            font-size: var(--label);
+            color: var(--muted);
+            letter-spacing: 0.15em;
+            z-index: 900;
+        }
+        .slide-counter .n { color: var(--gold); }
+
+        /* Keyboard hint — bottom right */
+        .kbd-hint {
+            position: fixed;
+            bottom: clamp(1rem, 3vh, 2rem);
+            right: clamp(1rem, 2.5vw, 2.5rem);
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            z-index: 900;
+        }
+
+        /* ===========================================
+           ANIMATION SYSTEM
+           Triggered by .visible class added via IntersectionObserver
+           =========================================== */
+        .rev, .rev-l, .rev-s {
+            opacity: 0;
+            transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+        }
+        .rev   { transform: translateY(22px); }
+        .rev-l { transform: translateX(-22px); }
+        .rev-s { transform: scale(0.93); }
+
+        .slide.visible .rev,
+        .slide.visible .rev-l,
+        .slide.visible .rev-s {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* Stagger delays */
+        .d1{transition-delay:0.10s} .d2{transition-delay:0.20s}
+        .d3{transition-delay:0.30s} .d4{transition-delay:0.40s}
+        .d5{transition-delay:0.50s} .d6{transition-delay:0.60s}
+        .d7{transition-delay:0.70s} .d8{transition-delay:0.80s}
+
+        /* ===========================================
+           SHARED TYPOGRAPHY UTILITIES
+           =========================================== */
+        .overline {
+            font-family: var(--mono);
+            font-size: var(--label);
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .display {
+            font-family: var(--serif);
+            font-size: var(--title-xl);
+            font-weight: 300;
+            line-height: 1;
+            letter-spacing: -0.01em;
+        }
+        .display em { font-style: italic; color: var(--gold); }
+
+        .heading {
+            font-family: var(--serif);
+            font-size: var(--title-lg);
+            font-weight: 300;
+            line-height: 1.1;
+        }
+        .heading em { font-style: italic; color: var(--gold); }
+
+        .body-text {
+            font-size: var(--body);
+            font-weight: 300;
+            line-height: 1.7;
+            color: var(--text-dim);
+        }
+        .body-text em, .body-text strong { color: var(--text); font-style: normal; font-weight: 500; }
+
+        /* Tech pills */
+        .pills { display: flex; flex-wrap: wrap; gap: clamp(0.3rem, 0.8vw, 0.6rem); }
+        .pill {
+            font-family: var(--mono);
+            font-size: var(--label);
+            padding: 0.3em 0.75em;
+            border: 1px solid var(--gold-border);
+            border-radius: 3px;
+            color: var(--gold);
+            background: var(--gold-dim);
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        /* Info row */
+        .info-row  { display: flex; align-items: center; gap: var(--gap-lg); flex-wrap: wrap; }
+        .info-item { display: flex; flex-direction: column; gap: 4px; }
+        .info-lbl  { font-family: var(--mono); font-size: var(--label); letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+        .info-val  { font-size: var(--body); font-weight: 500; }
+        .info-sep  { width: 1px; height: clamp(24px, 4vh, 42px); background: var(--gold-border); flex-shrink: 0; }
+
+        /* Card border */
+        .card {
+            border: 1px solid var(--gold-border);
+            border-radius: 8px;
+            padding: clamp(0.7rem, 1.5vw, 1.2rem);
+            background: var(--gold-dim);
+        }
+
+        /* ==========================================
+           SLIDE 1: COVER
+           ========================================== */
+        .s-cover .deco-q {
+            position: absolute;
+            right: var(--pad);
+            bottom: clamp(2.5rem, 6vh, 5rem);
+            font-family: var(--serif);
+            font-size: clamp(6rem, 15vw, 18rem);
+            color: rgba(201,169,110,0.04);
+            line-height: 1;
+            user-select: none;
+        }
+
+        .s-cover .tagline {
+            font-size: clamp(0.85rem, 1.7vw, 1.15rem);
+            font-weight: 300;
+            color: var(--text-dim);
+            line-height: 1.65;
+            max-width: 460px;
+            margin-bottom: var(--gap-xl);
+        }
+
+        /* ==========================================
+           SLIDE 2: ABOUT
+           ========================================== */
+        .traits { display: flex; gap: var(--gap-lg); flex-wrap: wrap; }
+        .trait  { display: flex; align-items: center; gap: 10px; font-size: var(--body); }
+        .trait::before { content:''; width:20px; height:1px; background:var(--gold); }
+
+        /* ==========================================
+           SLIDE 3: WORK
+           ========================================== */
+        .work-card { border-left: 2px solid var(--gold); padding-left: clamp(1.25rem, 2.5vw, 2rem); max-width: min(85vw, 680px); }
+        .work-co   { font-family: var(--serif); font-size: clamp(2rem, 5vw, 4rem); font-weight: 300; color: var(--gold); margin-bottom: var(--gap-sm); }
+        .work-role { font-size: clamp(0.85rem, 1.7vw, 1.15rem); font-weight: 500; margin-bottom: var(--gap-md); }
+        .work-desc { font-size: var(--body); color: var(--text-dim); line-height: 1.7; max-width: 520px; margin-bottom: var(--gap-md); font-weight: 300; }
+        .work-tags { display: flex; gap: var(--gap-sm); flex-wrap: wrap; }
+        .work-tag  { font-family: var(--mono); font-size: var(--label); color: var(--muted); padding: 0.25em 0.6em; border: 1px solid rgba(107,107,90,0.3); border-radius: 3px; }
+
+        /* ==========================================
+           SLIDE 4: TECH STACK
+           ========================================== */
+        .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr));
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+            max-width: min(90vw, 860px);
+        }
+        .stack-cat { display: flex; flex-direction: column; gap: clamp(0.4rem, 1vh, 0.7rem); }
+        .stack-cat-title { font-family: var(--mono); font-size: var(--label); letter-spacing: 0.2em; text-transform: uppercase; color: var(--sage); margin-bottom: 4px; }
+
+        /* ==========================================
+           SLIDES 5–7: PROJECTS
+           ========================================== */
+        .proj-num {
+            font-family: var(--serif);
+            font-size: clamp(4rem, 12vw, 9rem);
+            font-weight: 300;
+            font-style: italic;
+            color: rgba(201,169,110,0.12);
+            line-height: 1;
+            user-select: none;
+            /* Negative margin pulls content up so number overlaps cleanly */
+            margin-bottom: calc(-1 * clamp(1rem, 2.5vw, 2.5rem));
+        }
+        .proj-type  { font-family: var(--mono); font-size: var(--label); letter-spacing: 0.2em; text-transform: uppercase; color: var(--sage); }
+        .proj-name  { font-family: var(--serif); font-size: clamp(1.75rem, 4.5vw, 3.75rem); font-weight: 300; line-height: 1.1; }
+        .proj-desc  { font-size: var(--body); color: var(--text-dim); line-height: 1.65; max-width: 520px; font-weight: 300; }
+        .proj-client { font-family: var(--mono); font-size: var(--label); color: var(--muted); letter-spacing: 0.1em; }
+        .proj-client span { color: var(--gold); }
+
+        /* ==========================================
+           SLIDE 8: AI & ML
+           ========================================== */
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
+            gap: clamp(0.5rem, 1.2vw, 1rem);
+            max-width: min(90vw, 850px);
+        }
+        .ai-tool { font-family: var(--mono); font-size: var(--label); letter-spacing: 0.1em; color: var(--gold); margin-bottom: 5px; }
+        .ai-use  { font-size: clamp(0.65rem, 1.1vw, 0.85rem); color: var(--text-dim); line-height: 1.5; font-weight: 300; }
+
+        /* ==========================================
+           SLIDE 9: CLOUD & INFRASTRUCTURE
+           ========================================== */
+        .cloud-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(0.5rem, 1.2vw, 1rem);
+            max-width: min(90vw, 720px);
+        }
+        .cloud-name { font-family: var(--serif); font-size: clamp(1.1rem, 2.5vw, 1.75rem); font-weight: 300; color: var(--gold); margin-bottom: 6px; }
+        .cloud-desc { font-size: clamp(0.62rem, 1vw, 0.8rem); color: var(--text-dim); line-height: 1.5; font-weight: 300; }
+
+        /* ==========================================
+           SLIDE 10: BEYOND CODE
+           ========================================== */
+        .beyond-items { display: flex; flex-direction: column; gap: var(--gap-md); }
+        .beyond-item  { display: flex; gap: clamp(1rem, 2vw, 1.5rem); align-items: flex-start; }
+        .beyond-num   {
+            font-family: var(--serif); font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+            font-weight: 300; font-style: italic; color: var(--gold);
+            line-height: 1; flex-shrink: 0; width: clamp(1.5rem, 3vw, 2.5rem);
+        }
+        .beyond-title { font-size: var(--body); font-weight: 500; margin-bottom: 4px; }
+        .beyond-body  { font-size: clamp(0.68rem, 1.2vw, 0.88rem); color: var(--text-dim); line-height: 1.6; font-weight: 300; }
+
+        /* ==========================================
+           SLIDE 11: CONNECT
+           ========================================== */
+        .s-connect { align-items: center; text-align: center; }
+        .s-connect > .inner { display: flex; flex-direction: column; align-items: center; gap: var(--gap-md); max-width: min(90vw, 560px); }
+
+        .connect-links { display: flex; flex-direction: column; gap: clamp(0.4rem, 1.2vh, 0.8rem); width: 100%; }
+        .connect-link {
+            display: flex; align-items: center; gap: clamp(0.75rem, 1.5vw, 1.25rem);
+            padding: clamp(0.5rem, 1.2vh, 0.9rem) clamp(0.9rem, 1.8vw, 1.4rem);
+            border: 1px solid var(--gold-border); border-radius: 6px;
+            background: var(--gold-dim); text-decoration: none; color: var(--text);
+            transition: all 0.3s var(--ease);
+        }
+        .connect-link:hover { background: rgba(201,169,110,0.18); border-color: var(--gold); transform: translateY(-2px); }
+        .connect-plat { font-family: var(--mono); font-size: var(--label); letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); width: clamp(60px, 8vw, 80px); text-align: left; }
+        .connect-handle { font-size: var(--body); font-weight: 400; }
+        .connect-site { font-family: var(--mono); font-size: var(--label); color: var(--muted); letter-spacing: 0.1em; }
+
+        /* ===========================================
+           RESPONSIVE BREAKPOINTS
+           =========================================== */
+
+        /* Shorter viewports */
+        @media (max-height: 700px) {
+            :root {
+                --pad: clamp(1.5rem, 4vw, 3.5rem);
+                --gap-xl: clamp(1rem, 2vh, 1.75rem);
+                --gap-lg: clamp(0.6rem, 1.5vh, 1.25rem);
+                --title-xl: clamp(2.5rem, 7vw, 5.5rem);
+                --title-lg: clamp(1.4rem, 3.5vw, 3rem);
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --pad: clamp(1rem, 3vw, 2.5rem);
+                --gap-xl: clamp(0.6rem, 1.5vh, 1.2rem);
+                --gap-lg: clamp(0.4rem, 1vh, 0.9rem);
+                --title-xl: clamp(2rem, 6vw, 4rem);
+                --title-lg: clamp(1.2rem, 3vw, 2.25rem);
+                --body: clamp(0.7rem, 1.2vw, 0.9rem);
+            }
+            /* Hide decorative elements that aren't critical */
+            .nav-dots, .kbd-hint, .s-cover .deco-q, .proj-num { display: none; }
+        }
+
+        @media (max-height: 500px) {
+            :root {
+                --pad: clamp(0.75rem, 2.5vw, 2rem);
+                --title-xl: clamp(1.5rem, 5vw, 3rem);
+                --title-lg: clamp(1rem, 3vw, 1.75rem);
+            }
+        }
+
+        /* Narrow viewports */
+        @media (max-width: 600px) {
+            :root {
+                --title-xl: clamp(2.5rem, 11vw, 5rem);
+                --title-lg: clamp(1.4rem, 6vw, 2.5rem);
+            }
+            .cloud-grid { grid-template-columns: 1fr 1fr; }
+            .info-row { gap: var(--gap-md); }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            .rev, .rev-l, .rev-s { transition: opacity 0.3s ease; transform: none !important; }
+            html { scroll-behavior: auto; }
+            @keyframes drift { 0%,100% { transform: none; } }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         NAVIGATION CHROME
+         ============================================================ -->
+    <div class="progress-bar" id="prog"></div>
+    <nav class="nav-dots" id="dots" aria-label="Slide navigation"></nav>
+    <div class="slide-counter"><span class="n" id="cur">01</span> / <span id="tot">11</span></div>
+    <div class="kbd-hint">↑ ↓ · space · swipe</div>
+
+
+    <!-- ============================================================
+         SLIDE 01 — COVER
+         ============================================================ -->
+    <section class="slide s-cover" data-label="Cover">
+        <!-- Background -->
+        <div class="orb orb-gold" style="width:min(65vw,750px);height:min(65vw,750px);top:-20%;right:-12%;animation:drift 14s ease-in-out infinite;"></div>
+        <div class="orb orb-sage" style="width:min(35vw,400px);height:min(35vw,400px);bottom:5%;left:25%;animation:drift 19s ease-in-out infinite reverse;"></div>
+        <div class="grid-bg"></div>
+
+        <!-- Thin gold accent rule at top -->
+        <div style="position:absolute;top:var(--pad);left:var(--pad);width:clamp(40px,5vw,70px);height:1px;background:var(--gold);opacity:0.65;"></div>
+
+        <!-- Decorative quote mark -->
+        <div class="deco-q">&#8220;</div>
+
+        <!-- Content -->
+        <p class="overline rev d1" style="margin-bottom:var(--gap-lg);">Software Engineer · 2025</p>
+
+        <h1 class="display rev d2" style="margin-bottom:var(--gap-md);">
+            Chia<br><em>Zhe Min</em>
+        </h1>
+
+        <p class="tagline rev d3">
+            Full-stack developer focused on highly scalable<br>
+            and robust data-driven platforms.
+        </p>
+
+        <div class="info-row rev d4">
+            <div class="info-item">
+                <span class="info-lbl">Currently</span>
+                <span class="info-val">DRW</span>
+            </div>
+            <div class="info-sep"></div>
+            <div class="info-item">
+                <span class="info-lbl">Focus</span>
+                <span class="info-val">Data Systems</span>
+            </div>
+            <div class="info-sep"></div>
+            <div class="info-item">
+                <span class="info-lbl">Craft</span>
+                <span class="info-val">AI · Cloud · Full-stack</span>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 02 — ABOUT
+         ============================================================ -->
+    <section class="slide" data-label="About">
+        <div class="orb orb-gold" style="width:min(45vw,550px);height:min(45vw,550px);top:-5%;left:-10%;animation:drift 16s ease-in-out infinite;opacity:0.7;"></div>
+        <div class="grid-bg"></div>
+
+        <div style="max-width:min(85vw,700px);">
+            <p class="overline rev d1">About</p>
+            <div class="rule rev d1" style="margin:var(--gap-md) 0;"></div>
+
+            <h2 class="heading rev d2" style="margin-bottom:var(--gap-lg);">
+                Hello, I'm<br><em>Zhe Min</em>
+            </h2>
+
+            <p class="body-text rev d3" style="max-width:520px;margin-bottom:var(--gap-lg);">
+                I build software that scales — from <em>smart city operating systems</em>
+                serving entire districts to generative AI platforms that transform creative
+                workflows. Currently engineering proprietary data systems at DRW, where
+                precision and reliability are non-negotiable.
+            </p>
+
+            <div class="traits rev d4">
+                <div class="trait">Builder</div>
+                <div class="trait">Tinkerer</div>
+                <div class="trait">Craftsman</div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 03 — CURRENT ROLE
+         ============================================================ -->
+    <section class="slide" data-label="Work">
+        <div class="orb orb-sage" style="width:min(50vw,600px);height:min(50vw,600px);top:-20%;right:-15%;animation:drift 12s ease-in-out infinite;"></div>
+        <div class="orb orb-gold" style="width:min(25vw,300px);height:min(25vw,300px);bottom:8%;left:5%;animation:drift 21s ease-in-out infinite reverse;opacity:0.6;"></div>
+        <div class="grid-bg"></div>
+
+        <p class="overline rev d1" style="margin-bottom:var(--gap-lg);">Current Role</p>
+
+        <div class="work-card rev d2">
+            <div class="work-co">DRW</div>
+            <p class="work-role">Software Engineer — Proprietary Data Systems</p>
+            <p class="work-desc">
+                DRW is a diversified principal trading firm operating across global markets.
+                I build and maintain the internal data infrastructure that powers trading
+                operations — systems where data integrity, throughput, and reliability
+                are paramount.
+            </p>
+            <div class="work-tags">
+                <span class="work-tag">Proprietary Systems</span>
+                <span class="work-tag">Data Infrastructure</span>
+                <span class="work-tag">High Reliability</span>
+                <span class="work-tag">Financial Tech</span>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 04 — TECH STACK
+         ============================================================ -->
+    <section class="slide" data-label="Stack">
+        <div class="orb orb-gold" style="width:min(45vw,550px);height:min(45vw,550px);bottom:-20%;right:-10%;animation:drift 15s ease-in-out infinite;opacity:0.7;"></div>
+        <div class="grid-bg"></div>
+
+        <div style="margin-bottom:var(--gap-xl);">
+            <p class="overline rev d1">Tech Stack</p>
+            <div class="rule rev d1" style="margin:var(--gap-md) 0;"></div>
+            <h2 class="heading rev d2">Tools of<br><em>the craft</em></h2>
+        </div>
+
+        <div class="stack-grid">
+            <div class="stack-cat rev d3">
+                <p class="stack-cat-title">Languages</p>
+                <div class="pills">
+                    <span class="pill">Python</span>
+                    <span class="pill">TypeScript</span>
+                    <span class="pill">Java</span>
+                </div>
+            </div>
+
+            <div class="stack-cat rev d4">
+                <p class="stack-cat-title">Cloud</p>
+                <div class="pills">
+                    <span class="pill">Azure</span>
+                    <span class="pill">AWS</span>
+                    <span class="pill">GCP</span>
+                </div>
+            </div>
+
+            <div class="stack-cat rev d5">
+                <p class="stack-cat-title">AI / ML</p>
+                <div class="pills">
+                    <span class="pill">PyTorch</span>
+                    <span class="pill">Stable Diffusion</span>
+                    <span class="pill">OpenAI</span>
+                    <span class="pill">HuggingFace</span>
+                    <span class="pill">YOLO</span>
+                </div>
+            </div>
+
+            <div class="stack-cat rev d6">
+                <p class="stack-cat-title">Infrastructure</p>
+                <div class="pills">
+                    <span class="pill">Kubernetes</span>
+                    <span class="pill">Prometheus</span>
+                    <span class="pill">Vercel</span>
+                    <span class="pill">PlanetScale</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 05 — PROJECT 01: OPEN DIGITAL PLATFORM
+         ============================================================ -->
+    <section class="slide" data-label="JTC Project">
+        <div class="orb orb-gold" style="width:min(55vw,650px);height:min(55vw,650px);top:-15%;right:-15%;animation:drift 11s ease-in-out infinite;opacity:0.5;"></div>
+        <div class="grid-bg"></div>
+
+        <div style="display:flex;flex-direction:column;gap:var(--gap-md);max-width:min(90vw,740px);">
+            <div class="proj-num rev-s d1">01</div>
+            <p class="proj-type rev d2">Smart City Operating System</p>
+            <h2 class="proj-name rev d3">Open Digital<br>Platform</h2>
+            <div class="rule rev d3"></div>
+            <p class="proj-desc rev d4">
+                A district-level smart city OS unifying management operations across
+                multiple solutions — computer vision, IoT monitoring, and real-time
+                data orchestration at city scale.
+            </p>
+            <p class="proj-client rev d4">Client: <span>JTC Corporation</span></p>
+            <div class="pills rev d5">
+                <span class="pill">Python</span>
+                <span class="pill">Azure</span>
+                <span class="pill">Kubernetes</span>
+                <span class="pill">PyTorch</span>
+                <span class="pill">YOLO</span>
+                <span class="pill">Java</span>
+                <span class="pill">TypeScript</span>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 06 — PROJECT 02: SPACEJOT
+         ============================================================ -->
+    <section class="slide" data-label="SpaceJot">
+        <div class="orb orb-sage" style="width:min(50vw,600px);height:min(50vw,600px);bottom:-15%;right:-10%;animation:drift 13s ease-in-out infinite reverse;opacity:0.7;"></div>
+        <div class="orb orb-gold" style="width:min(20vw,250px);height:min(20vw,250px);top:12%;left:5%;animation:drift 18s ease-in-out infinite;opacity:0.5;"></div>
+        <div class="grid-bg"></div>
+
+        <div style="display:flex;flex-direction:column;gap:var(--gap-md);max-width:min(90vw,740px);">
+            <div class="proj-num rev-s d1">02</div>
+            <p class="proj-type rev d2">Generative AI · Interior Design</p>
+            <h2 class="proj-name rev d3">SpaceJot</h2>
+            <div class="rule rev d3"></div>
+            <p class="proj-desc rev d4">
+                An interior design platform powered by generative AI and computer vision.
+                Users visualise, iterate, and personalise living spaces using
+                Stable Diffusion-based image synthesis at scale.
+            </p>
+            <div class="pills rev d5">
+                <span class="pill">Python</span>
+                <span class="pill">TypeScript</span>
+                <span class="pill">AWS</span>
+                <span class="pill">Stable Diffusion</span>
+                <span class="pill">HuggingFace</span>
+                <span class="pill">Vercel</span>
+                <span class="pill">PlanetScale</span>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 07 — PROJECT 03: GREENCHAIN
+         ============================================================ -->
+    <section class="slide" data-label="GreenChain">
+        <div class="orb orb-gold" style="width:min(55vw,650px);height:min(55vw,650px);top:-20%;left:-10%;animation:drift 15s ease-in-out infinite;opacity:0.45;"></div>
+        <div class="grid-bg"></div>
+
+        <div style="display:flex;flex-direction:column;gap:var(--gap-md);max-width:min(90vw,740px);">
+            <div class="proj-num rev-s d1">03</div>
+            <p class="proj-type rev d2">ESG · Carbon Disclosure · FinTech</p>
+            <h2 class="proj-name rev d3">GreenChain</h2>
+            <div class="rule rev d3"></div>
+            <p class="proj-desc rev d4">
+                A carbon emissions disclosure platform for financial institutions —
+                capturing Scope 1, 2, and 3 emission data with AI-powered analysis
+                and reporting, enabling compliance with ESG regulatory frameworks.
+            </p>
+            <div class="pills rev d5">
+                <span class="pill">Python</span>
+                <span class="pill">OpenAI</span>
+                <span class="pill">GCP</span>
+                <span class="pill">TypeScript</span>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 08 — AI & ML EXPERTISE
+         ============================================================ -->
+    <section class="slide" data-label="AI & ML">
+        <div class="orb orb-gold" style="width:min(40vw,500px);height:min(40vw,500px);top:-10%;right:-5%;animation:drift 10s ease-in-out infinite;opacity:0.6;"></div>
+        <div class="grid-bg"></div>
+
+        <p class="overline rev d1" style="margin-bottom:var(--gap-md);">Expertise</p>
+        <div class="rule rev d1" style="margin-bottom:var(--gap-lg);"></div>
+        <h2 class="heading rev d2" style="margin-bottom:var(--gap-xl);">AI &amp; Machine<br><em>Learning</em></h2>
+
+        <div class="ai-grid">
+            <div class="card rev d3">
+                <p class="ai-tool">PyTorch</p>
+                <p class="ai-use">Deep learning model training and deployment for computer vision tasks</p>
+            </div>
+            <div class="card rev d4">
+                <p class="ai-tool">Stable Diffusion</p>
+                <p class="ai-use">Generative image synthesis pipelines for creative applications</p>
+            </div>
+            <div class="card rev d5">
+                <p class="ai-tool">YOLO</p>
+                <p class="ai-use">Real-time object detection at city scale for smart monitoring</p>
+            </div>
+            <div class="card rev d6">
+                <p class="ai-tool">OpenAI API</p>
+                <p class="ai-use">LLM integration for intelligent data analysis and automated reporting</p>
+            </div>
+            <div class="card rev d7">
+                <p class="ai-tool">HuggingFace</p>
+                <p class="ai-use">Model hosting, fine-tuning, and inference at production scale</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 09 — CLOUD & INFRASTRUCTURE
+         ============================================================ -->
+    <section class="slide" data-label="Cloud">
+        <div class="orb orb-sage" style="width:min(50vw,600px);height:min(50vw,600px);bottom:-25%;left:-15%;animation:drift 13s ease-in-out infinite reverse;opacity:0.7;"></div>
+        <div class="grid-bg"></div>
+
+        <p class="overline rev d1" style="margin-bottom:var(--gap-md);">Infrastructure</p>
+        <div class="rule rev d1" style="margin-bottom:var(--gap-lg);"></div>
+        <h2 class="heading rev d2" style="margin-bottom:var(--gap-xl);">Cloud at<br><em>Scale</em></h2>
+
+        <div class="cloud-grid">
+            <div class="card rev d3">
+                <p class="cloud-name">Azure</p>
+                <p class="cloud-desc">Enterprise-scale smart city and IoT workloads</p>
+            </div>
+            <div class="card rev d4">
+                <p class="cloud-name">AWS</p>
+                <p class="cloud-desc">ML inference pipelines and serverless backends</p>
+            </div>
+            <div class="card rev d5">
+                <p class="cloud-name">GCP</p>
+                <p class="cloud-desc">Data analytics and LLM-powered workflows</p>
+            </div>
+            <div class="card rev d6">
+                <p class="cloud-name">Kubernetes</p>
+                <p class="cloud-desc">Container orchestration for high-availability systems</p>
+            </div>
+            <div class="card rev d7">
+                <p class="cloud-name">Prometheus</p>
+                <p class="cloud-desc">Observability and real-time production monitoring</p>
+            </div>
+            <div class="card rev d8">
+                <p class="cloud-name">Vercel</p>
+                <p class="cloud-desc">Edge deployment for frontend with global CDN</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 10 — BEYOND CODE
+         ============================================================ -->
+    <section class="slide" data-label="Beyond">
+        <div class="orb orb-gold" style="width:min(35vw,450px);height:min(35vw,450px);bottom:5%;right:5%;animation:drift 17s ease-in-out infinite;opacity:0.5;"></div>
+        <div class="orb orb-sage" style="width:min(20vw,250px);height:min(20vw,250px);top:15%;right:20%;animation:drift 23s ease-in-out infinite reverse;opacity:0.55;"></div>
+        <div class="grid-bg"></div>
+
+        <div style="max-width:min(85vw,680px);">
+            <p class="overline rev d1">Beyond Code</p>
+            <div class="rule rev d1" style="margin:var(--gap-md) 0;"></div>
+            <h2 class="heading rev d2" style="margin-bottom:var(--gap-xl);">More than<br><em>an engineer</em></h2>
+
+            <div class="beyond-items">
+                <div class="beyond-item rev d3">
+                    <div class="beyond-num">I</div>
+                    <div>
+                        <p class="beyond-title">Startup Tinkerer</p>
+                        <p class="beyond-body">I enjoy building and experimenting with tech ideas for startups — turning concepts into working prototypes quickly and iteratively.</p>
+                    </div>
+                </div>
+
+                <div class="beyond-item rev d4">
+                    <div class="beyond-num">II</div>
+                    <div>
+                        <p class="beyond-title">Artistic Pursuits</p>
+                        <p class="beyond-body">Engineering and artistry aren't opposites. I actively pursue creative endeavors alongside technical work — the two feed each other.</p>
+                    </div>
+                </div>
+
+                <div class="beyond-item rev d5">
+                    <div class="beyond-num">III</div>
+                    <div>
+                        <p class="beyond-title">Lifelong Learner</p>
+                        <p class="beyond-body">From YOLO object detection to ESG reporting frameworks — curiosity drives me to master domains well outside my comfort zone.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         SLIDE 11 — CONNECT
+         ============================================================ -->
+    <section class="slide s-connect" data-label="Connect">
+        <!-- Centered orb: use left offset instead of transform to avoid animation conflict -->
+        <div class="orb orb-gold" style="width:min(60vw,700px);height:min(60vw,700px);top:-25%;left:calc(50% - min(30vw,350px));animation:drift 16s ease-in-out infinite;"></div>
+        <div class="grid-bg"></div>
+
+        <div class="inner">
+            <p class="overline rev d1">Let's Connect</p>
+            <div class="rule rev d1" style="margin:var(--gap-md) 0;"></div>
+
+            <h2 class="heading rev d2">Chia<br><em>Zhe Min</em></h2>
+
+            <p class="body-text rev d3">
+                Open to interesting problems, collaborations, and conversations.
+            </p>
+
+            <div class="connect-links rev d4">
+                <a href="https://github.com/zhems" target="_blank" rel="noopener" class="connect-link">
+                    <span class="connect-plat">GitHub</span>
+                    <span class="connect-handle">@zhems</span>
+                </a>
+                <a href="https://www.linkedin.com/in/chiazhemin" target="_blank" rel="noopener" class="connect-link">
+                    <span class="connect-plat">LinkedIn</span>
+                    <span class="connect-handle">chiazhemin</span>
+                </a>
+                <a href="https://www.instagram.com/hellozhems" target="_blank" rel="noopener" class="connect-link">
+                    <span class="connect-plat">Instagram</span>
+                    <span class="connect-handle">@hellozhems</span>
+                </a>
+            </div>
+
+            <p class="connect-site rev d5">chiazhemin.com</p>
+        </div>
+    </section>
+
+
+    <script>
+        /* ===========================================
+           SLIDE PRESENTATION CONTROLLER
+           Handles navigation, animation triggers, and UI sync.
+           =========================================== */
+
+        class SlidePresentation {
+            constructor() {
+                this.slides   = Array.from(document.querySelectorAll('.slide'));
+                this.total    = this.slides.length;
+                this.current  = 0;
+                this.wheelCD  = false;  // wheel cooldown flag
+                this.touchY   = 0;
+
+                this.prog   = document.getElementById('prog');
+                this.cur    = document.getElementById('cur');
+                this.tot    = document.getElementById('tot');
+                this.dotsEl = document.getElementById('dots');
+
+                this.tot.textContent = String(this.total).padStart(2, '0');
+
+                this.buildDots();
+                this.observe();
+                this.bindKeys();
+                this.bindTouch();
+                this.bindWheel();
+
+                // Activate first slide immediately
+                this.slides[0].classList.add('visible');
+            }
+
+            /* Build the right-side dot navigation */
+            buildDots() {
+                this.slides.forEach((s, i) => {
+                    const b = document.createElement('button');
+                    b.className = 'nav-dot' + (i === 0 ? ' active' : '');
+                    b.setAttribute('aria-label', `Slide ${i + 1}: ${s.dataset.label || ''}`);
+                    b.setAttribute('data-label', s.dataset.label || '');
+                    b.addEventListener('click', () => this.go(i));
+                    this.dotsEl.appendChild(b);
+                });
+                this.dots = Array.from(this.dotsEl.querySelectorAll('.nav-dot'));
+            }
+
+            /* IntersectionObserver:
+               - At 30% visible → add .visible for entrance animations
+               - At 55% visible → sync current slide index for UI */
+            observe() {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach(e => {
+                        if (!e.isIntersecting) return;
+                        e.target.classList.add('visible');
+                        if (e.intersectionRatio >= 0.55) {
+                            const i = this.slides.indexOf(e.target);
+                            if (i !== -1 && i !== this.current) {
+                                this.current = i;
+                                this.updateUI();
+                            }
+                        }
+                    });
+                }, { threshold: [0.30, 0.55] });
+
+                this.slides.forEach(s => io.observe(s));
+            }
+
+            /* Keyboard navigation */
+            bindKeys() {
+                document.addEventListener('keydown', e => {
+                    if (e.target.getAttribute('contenteditable')) return;
+                    switch (e.key) {
+                        case 'ArrowDown': case 'ArrowRight': case ' ':
+                            e.preventDefault(); this.next(); break;
+                        case 'ArrowUp': case 'ArrowLeft':
+                            e.preventDefault(); this.prev(); break;
+                        case 'Home': e.preventDefault(); this.go(0); break;
+                        case 'End':  e.preventDefault(); this.go(this.total - 1); break;
+                    }
+                });
+            }
+
+            /* Touch / swipe */
+            bindTouch() {
+                document.addEventListener('touchstart', e => {
+                    this.touchY = e.touches[0].clientY;
+                }, { passive: true });
+
+                document.addEventListener('touchend', e => {
+                    const dy = this.touchY - e.changedTouches[0].clientY;
+                    if (Math.abs(dy) > 50) dy > 0 ? this.next() : this.prev();
+                }, { passive: true });
+            }
+
+            /* Mouse wheel with 800ms cooldown to prevent runaway scrolling */
+            bindWheel() {
+                document.addEventListener('wheel', e => {
+                    if (this.wheelCD || Math.abs(e.deltaY) < 20) return;
+                    this.wheelCD = true;
+                    e.deltaY > 0 ? this.next() : this.prev();
+                    setTimeout(() => { this.wheelCD = false; }, 800);
+                }, { passive: true });
+            }
+
+            /* Navigate to a slide index */
+            go(i) {
+                this.current = Math.max(0, Math.min(i, this.total - 1));
+                this.slides[this.current].scrollIntoView({ behavior: 'smooth' });
+                this.updateUI();
+            }
+
+            next() { this.go(this.current + 1); }
+            prev() { this.go(this.current - 1); }
+
+            /* Update progress bar, dots, and counter */
+            updateUI() {
+                const pct = this.total > 1
+                    ? (this.current / (this.total - 1)) * 100
+                    : 100;
+                this.prog.style.width = pct + '%';
+                this.cur.textContent  = String(this.current + 1).padStart(2, '0');
+                this.dots.forEach((d, i) => d.classList.toggle('active', i === this.current));
+            }
+        }
+
+        new SlidePresentation();
+    </script>
+</body>
+</html>
