@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Keep ~/.claude/skills in sync with this repo's skills. Never blocks a commit.
+"$(git rev-parse --show-toplevel)/scripts/link-skills.sh" || true
+exit 0
